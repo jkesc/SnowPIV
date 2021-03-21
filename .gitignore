@@ -3,7 +3,8 @@
 #--------------------------#
 
 /PATCH_*.sh
-
+*.mp4
+*.avi
 /app/etc/local.xml
 
 /media/*
