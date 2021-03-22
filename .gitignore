@@ -4,6 +4,7 @@
 
 /PATCH_*.sh
 *.mp4
+*.pyc
 *.avi
 /app/etc/local.xml
 
