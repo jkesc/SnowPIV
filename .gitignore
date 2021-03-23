@@ -45,3 +45,6 @@
 /var/package/*
 !/var/package/*.xml
 
+*.pyc
+__pycache__/FilterBG.cpython-37.pyc
+__pycache__/GetContrast.cpython-37.pyc

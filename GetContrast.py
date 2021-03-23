@@ -37,3 +37,4 @@ def RemoveBG(ImgAve,name,record=False,ContrastTreshold=100,filename='FilteredPIV
     cv2.destroyAllWindows()
     return ContrastMap
     #cleaning up the mess we made.
+    
