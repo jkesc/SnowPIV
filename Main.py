@@ -30,14 +30,16 @@ def getClusters(contrastMap):
     for i in range(contrastMap.shape[0]):
         for j in range(contrastMap.shape[1]): #Iterate through entire image
             if contrastMap[i,j]: #only have to do something if the pixel is true
-                for checkKey in clusters:#Checking the "clusters" dict to see if this point is part of another cluster
-                    if (i,j) in clusters[checkKey]["candidate"]:#if it is, add it to the right cluster and remove from candidate list
-                        clusters[checkKey]["member"] |= {(i,j)}
-                        clusters[checkKey]["candidate"].remove((i,j))                       
-                        clusters[checkKey]["candidate"] |= {(i+1,j),(i,j+1),(i+1,j+1)}#Add unchecked neighboring cells to candidate list
-                else:
-                    clusters[key]={"member":{(i,j)},"candidate":{(i+1,j),(i,j+1),(i+1,j+1)}}#else, make entry for new subset and increas key by 1
-                    key+=1
+                clusters[key]={"member":{(i,j)},"candidate":{(i+1,j),(i,j+1),(i+1,j+1)}}#else, make entry for new subset and increas key by 1
+                keyChain=list()
+                for checkKey in clusters: #Checking the "clusters" dict to see if this point is part of another cluster
+                    if (i,j) in clusters[checkKey]["candidate"] and key != checkKey: #if it is add the older cluster to this new one, and delete the older one
+                        clusters[key]["member"] |= clusters[checkKey]["member"]
+                        clusters[key]["candidate"] |= clusters[checkKey]["candidate"]
+                        keyChain.append(checkKey)
+                for k in keyChain:
+                    del clusters[k]
+                key+=1
     return clusters
 
 #The next one uses much time and does absoluetely nothing...
@@ -121,6 +123,12 @@ def GetBG(name):
     
     ImgAve=(image_sum/counter).astype(int)
     return ImgAve
+
+def getClusterdims(clusters,name="member"): #Used for debugging only
+    a=[]
+    for l in clusters:
+        a.append(len(clusters[l][name]))
+    print(max(a))
 
 if __name__=="__main__":
     contrastMap, clusters=main()
