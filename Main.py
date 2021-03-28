@@ -15,7 +15,7 @@ def main():
     contrastMap=RemoveBG(BG,'PIV2.mp4',False,i,str(i)+'.avi')
     clusters=getClusters(contrastMap)
     colorCluster(clusters,contrastMap)
-    return contrastMap,clusters
+    return contrastMap,clusters,BG
 
 
 
@@ -33,7 +33,7 @@ def getClusters(contrastMap):
                 clusters[key]={"member":{(i,j)},"candidate":{(i+1,j),(i,j+1),(i+1,j+1)}}#else, make entry for new subset and increas key by 1
                 keyChain=list()
                 for checkKey in clusters: #Checking the "clusters" dict to see if this point is part of another cluster
-                    if (i,j) in clusters[checkKey]["candidate"] and key != checkKey: #if it is add the older cluster to this new one, and delete the older one
+                    if (i,j) in clusters[checkKey]["candidate"] and key != checkKey: #if it is, add the older cluster to this new one, and delete the older one
                         clusters[key]["member"] |= clusters[checkKey]["member"]
                         clusters[key]["candidate"] |= clusters[checkKey]["candidate"]
                         keyChain.append(checkKey)
@@ -42,16 +42,7 @@ def getClusters(contrastMap):
                 key+=1
     return clusters
 
-#The next one uses much time and does absoluetely nothing...
-def joinClusters(ClusterDict):
-    for key in ClusterDict:
-        for compareKey in ClusterDict:
-            if compareKey != key:
-                if not ClusterDict[key]["member"].isdisjoint(ClusterDict[compareKey]["member"]):
-                    ClusterDict[key]["member"] |= ClusterDict[compareKey]["member"]
-    return ClusterDict
-
-#This one just checks the size f each cluster, and colors it according to its size.
+#This one just checks the size of each cluster, and colors it according to its size.
 def colorCluster(cluster,contrastMap,size=17,colorAbove=255,colorBelow=255):
     import copy as cp
     R=cp.deepcopy(contrastMap)
@@ -130,6 +121,16 @@ def getClusterdims(clusters,name="member"): #Used for debugging only
         a.append(len(clusters[l][name]))
     print(max(a))
 
+#I Don't understand how this FFT business works...
+def crossCorelateMaps(mainMap,subMap):
+    import numpy as np
+    invertedMap=np.flip(np.flip(mainMap,0),1)
+    emptyMap=np.zeros(mainMap.shape)
+    for i in mainMap.shape[0]-subMap.shape[0]:
+        for j in mainMap.shape[1]-subMap.shape[1]:
+            emptyMap[i:i+subMap.shape[0],j:j+subMap.shape[1]]=subMap
+            correlation=np.fft.ifft(np.fft.fft2(emptyMap)*np.fft.fft2(invertedMap))
+
 if __name__=="__main__":
-    contrastMap, clusters=main()
+    contrastMap, clusters, BG=main()
     #Find the average value of all of the images and return it.
