@@ -122,14 +122,23 @@ def getClusterdims(clusters,name="member"): #Used for debugging only
     print(max(a))
 
 #I Don't understand how this FFT business works...
-def crossCorelateMaps(mainMap,subMap):
+def crossCorelateMaps(mainMap,kernel):
     import numpy as np
-    invertedMap=np.flip(np.flip(mainMap,0),1)
-    emptyMap=np.zeros(mainMap.shape)
-    for i in mainMap.shape[0]-subMap.shape[0]:
-        for j in mainMap.shape[1]-subMap.shape[1]:
-            emptyMap[i:i+subMap.shape[0],j:j+subMap.shape[1]]=subMap
-            correlation=np.fft.ifft(np.fft.fft2(emptyMap)*np.fft.fft2(invertedMap))
+    mainMap=mainMap/abs(mainMap).max()
+    kernel=kernel/abs(kernel).max()#Normalizing the image and the kernel to themselsves
+    # invertedMap=np.flip(np.flip(mainMap,0),1)#Cross correlation is just a convolution with one flipped matrix
+    kernel=np.flip(np.flip(kernel,0),1)
+    #emptyMap=np.zeros(mainMap.shape)
+    ki=kernel.shape[0]
+    kj=kernel.shape[1]
+    inum=mainMap.shape[0]-ki#Number of i-values
+    jnum=mainMap.shape[1]-kj#number of j-values to iterate over
+    correlation=np.zeros([inum,jnum])
+    for i in range(inum):
+        for j in range(jnum):
+            subMap=mainMap[i:i+ki,j:j+kj]
+            correlation[i,j]=sum(sum(np.fft.ifft2(np.fft.fft2(kernel)*np.fft.fft2(subMap))))
+    return correlation
 
 if __name__=="__main__":
     contrastMap, clusters, BG=main()
