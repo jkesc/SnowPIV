@@ -124,20 +124,22 @@ def getClusterdims(clusters,name="member"): #Used for debugging only
 #I Don't understand how this FFT business works...
 def crossCorelateMaps(mainMap,kernel):
     import numpy as np
-    mainMap=mainMap/abs(mainMap).max()
-    kernel=kernel/abs(kernel).max()#Normalizing the image and the kernel to themselsves
+    normalizationFactor=max([abs(mainMap).max(),abs(kernel.max()),1])
+    mainMap=mainMap/normalizationFactor
+    kernel=kernel/normalizationFactor#Normalizing the image and the kernel to themselsves
     #emptyMap=np.zeros(mainMap.shape)
     ki=kernel.shape[0]
     kj=kernel.shape[1]
-    inum=mainMap.shape[0]-ki#Number of i-values
-    jnum=mainMap.shape[1]-kj#number of j-values to iterate over
+    iImg=mainMap.shape[0]
+    jImg=mainMap.shape[1]
+    inum=iImg+ki-1#Number of i-values
+    jnum=jImg+kj-1#number of j-values to iterate over
     correlation=np.zeros([inum,jnum])
-    # transformedMap=np.fft.fft2(invertedMap)
-    # transformedKernel=np.fft.fft2(kernel)
     for i in range(inum):
         for j in range(jnum):
             subMap=mainMap[i:i+ki,j:j+kj]
-            correlation[i,j]=sum(sum(kernel*subMap))
+            subMap=subMap[-((ki-1+iImg)-i):i+1,-((kj-1+jImg)-j):j+1]#These indices work. Just have to iterate over right domain
+            correlation[i,j]=sum(sum(kernel[-(i+1):(ki-1+iImg)-i,-(j+1):(kj-1+jImg)-j]*subMap))
     return correlation
 
 if __name__=="__main__":
