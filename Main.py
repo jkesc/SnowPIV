@@ -142,6 +142,12 @@ def crossCorelateMaps(mainMap,kernel):
             correlation[i,j]=sum(sum(kernel[-(i+1):(ki-1+iImg)-i,-(j+1):(kj-1+jImg)-j]*subMap))
     return correlation
 
+def sumArray(array):
+    arrayOut=array
+    if isinstance(sum(arrayOut),type(array)):
+        arrayOut=sum(sumArray(array))
+    return arrayOut
+
 if __name__=="__main__":
     contrastMap, clusters, BG=main()
     #Find the average value of all of the images and return it.
