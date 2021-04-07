@@ -143,9 +143,10 @@ def crossCorelateMaps(mainMap,kernel):
     return correlation
 
 def sumArray(array):
+    from collections.abc import Iterable
     arrayOut=array
-    if isinstance(sum(arrayOut),type(array)):
-        arrayOut=sum(sumArray(array))
+    while isinstance(arrayOut,Iterable):
+        arrayOut=sumArray(sum(array))
     return arrayOut
 
 if __name__=="__main__":
