@@ -150,6 +150,7 @@ def crossCorelateMaps(mainMap,kernel):
     #AND, should reduce the image size. big parts are to fuzzy to get a good flow field anyways.
     canvas=np.zeros([inum+ki-1,jnum+kj-1])
     canvas[ki-1:ki+iImg-1,kj-1:kj+jImg-1]=mainMap
+    end=float(inum)*float(jnum)
     for i in range(inum):
         for j in range(jnum):
 #            print(i,j)
@@ -157,9 +158,8 @@ def crossCorelateMaps(mainMap,kernel):
             correlation[i,j]=sumArray(kernel*canvas[i:i+ki,j:j+kj])
             if j % 100 == 0:
                 current=float(i)*float(jnum)+float(j)
-                end=float(inum)*float(jnum)
                 print(current/end)#To give an indication of the process.
-    return correlation
+    return correlation,canvas
 
 def sumArray(array):
     from collections.abc import Iterable
