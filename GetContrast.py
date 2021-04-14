@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 
 def RemoveBG(ImgAve,name,record=False,ContrastTreshold=100,filename='FilteredPIV.avi'):
+    
     video=cv2.VideoCapture(name)
     success,image=video.read()
     height,width,channels=image.shape
@@ -37,4 +38,3 @@ def RemoveBG(ImgAve,name,record=False,ContrastTreshold=100,filename='FilteredPIV
     cv2.destroyAllWindows()
     return ContrastMap
     #cleaning up the mess we made.
-    

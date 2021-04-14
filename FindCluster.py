@@ -16,40 +16,41 @@ def getClusters(contrastMap):
     for i in range(contrastMap.shape[0]):
         for j in range(contrastMap.shape[1]): #Iterate through entire image
             if contrastMap[i,j]: #only have to do something if the pixel is true
-                for checkKey in clusters:#Checking the "clusters" dict to see if this point is part of another cluster
-                    if (i,j) in clusters[checkKey]["candidate"]:#if it is, add it to the right cluster and remove from candidate list
-                        clusters[checkKey]["member"] |= {(i,j)}
-                        clusters[checkKey]["candidate"].remove((i,j))                       
-                        clusters[checkKey]["candidate"] |= {(i+1,j),(i,j+1),(i+1,j+1)}#Add unchecked neighboring cells to candidate list
-                else:
-                    clusters[key]={"member":{(i,j)},"candidate":{(i+1,j),(i,j+1),(i+1,j+1)}}#else, make entry for new subset and increas key by 1
-                    key+=1
+                clusters[key]={"member":{(i,j)},"candidate":{(i+1,j),(i,j+1),(i+1,j+1)}}#else, make entry for new subset and increas key by 1
+                keyChain=list()
+                for checkKey in clusters: #Checking the "clusters" dict to see if this point is part of another cluster
+                    if (i,j) in clusters[checkKey]["candidate"] and key != checkKey: #if it is, add the older cluster to this new one, and delete the older one
+                        clusters[key]["member"] |= clusters[checkKey]["member"]
+                        clusters[key]["candidate"] |= clusters[checkKey]["candidate"]
+                        keyChain.append(checkKey)
+                for k in keyChain:
+                    del clusters[k]
+                key+=1
     return clusters
 
-#The next one uses much time and does absoluetely nothing...
-def joinClusters(ClusterDict):
-    for key in ClusterDict:
-        for compareKey in ClusterDict:
-            if compareKey != key:
-                if not ClusterDict[key]["member"].isdisjoint(ClusterDict[compareKey]["member"]):
-                    ClusterDict[key]["member"] |= ClusterDict[compareKey]["member"]
-    return ClusterDict
-
-#This one just checks the size f each cluster, and colors it according to its size.
-import copy as cp
-def colorCluster(cluster,contrastMap,size=17):
+#This one just checks the size of each cluster, and colors it according to its size.
+def colorCluster(cluster,contrastMap,size=17,colorAbove=255,colorBelow=255):
+    import copy as cp
     R=cp.deepcopy(contrastMap)
     G=cp.deepcopy(contrastMap)
     B=cp.deepcopy(contrastMap)
-    color=255
     for key in cluster:
         #color=key%255
         for i in cluster[key]["member"]:
             if len(cluster[key]["member"])>size:
-                R[i]=0
+                R[i]=colorAbove
                 G[i]=0
             else:
-                G[i]=color
+                G[i]=colorBelow
                 R[i]=0
             B[i]=0
     return R,G,B
+
+
+
+
+def getClusterdims(clusters,name="member"): #Used for debugging only
+    a=[]
+    for l in clusters:
+        a.append(len(clusters[l][name]))
+    print(max(a))
