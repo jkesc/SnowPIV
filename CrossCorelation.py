@@ -41,7 +41,7 @@ def crossCorelateMaps(mainMap,kernel):
             if j % 100 == 0:
                 current=float(i)*float(jnum)+float(j)
                 print(current/end)#To give an indication of the process.
-    return correlation,canvas
+    return correlation
 
 def sumArray(array):
     from collections.abc import Iterable
@@ -53,18 +53,43 @@ def sumArray(array):
 #should return element index of upper left corner of all discrete elements, as well as height and width of all elements.
     #numel is the number of elements in the vertical direction.
     #If the Map is not exactly one integer amount of element length in every direction, the map will be cropped at the lower and rightmost edges.
-def discretizeMap(Map,numel):
+def discretizeMap(Map,numel0):
     import copy as cp
-    pixels0=int(Map.shape[0]/numel)
+    pixels0=int(Map.shape[0]/numel0)
     pixels1=cp.deepcopy(pixels0)
     indexList=[]
     i=0
     j=0
+    numel1=int(Map.shape[0]/pixels1)
     while i<=Map.shape[0]-pixels0:
         while j<=Map.shape[1]-pixels1:
-            print(Map.shape[1]-pixels1)
             indexList.append((i,j))
             j+=pixels1
         i+=pixels0
         j=0
-    return[indexList,pixels0,pixels1]
+    return[indexList,pixels0,pixels1,numel0,numel1]
+
+#Applies cross correlation from one picture divided into equally large elements, to another picture to see the change in location
+def crossCorelateFrames(frame0,numel,frame1):
+    import numpy as np
+    import copy as cp
+    DiscreteProperties=discretizeMap(frame0,numel)
+    indexList=DiscreteProperties[0]
+    pixels0=DiscreteProperties[1]
+    pixels1=DiscreteProperties[2]
+    numel0=DiscreteProperties[3]
+    numel1=DiscreteProperties[4]
+    displacement=np.zeros([numel0,numel1])
+    canvasIndex=cp.deepcopy(displacement)
+    icount=0
+    jcount=0
+    for (i,j) in DiscreteProperties[0]:
+        correlation=crossCorelateMaps(frame1,frame0[i:i+DiscreteProperties[1],j:DiscreteProperties[2]])
+        canvasIndex[icount,jcount]=np.unravel_index(correlation.argmax(),correlation.shape)
+        displacement[icount,jcount]=(canvasIndex[icount,jcount][0]-i+DiscreteProperties[1]-1,canvasIndex[icount,jcount][1]-j+DiscreteProperties[2]-1)
+        icount+=1
+        if icount>DiscreteProperties[3]:
+            icount=0
+            jcount+=1
+    return displacement    
+        
