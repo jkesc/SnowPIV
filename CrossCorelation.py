@@ -49,3 +49,22 @@ def sumArray(array):
     while isinstance(arrayOut,Iterable):
         arrayOut=sumArray(sum(array))
     return arrayOut
+
+#should return element index of upper left corner of all discrete elements, as well as height and width of all elements.
+    #numel is the number of elements in the vertical direction.
+    #If the Map is not exactly one integer amount of element length in every direction, the map will be cropped at the lower and rightmost edges.
+def discretizeMap(Map,numel):
+    import copy as cp
+    pixels0=int(Map.shape[0]/numel)
+    pixels1=cp.deepcopy(pixels0)
+    indexList=[]
+    i=0
+    j=0
+    while i<=Map.shape[0]-pixels0:
+        while j<=Map.shape[1]-pixels1:
+            print(Map.shape[1]-pixels1)
+            indexList.append((i,j))
+            j+=pixels1
+        i+=pixels0
+        j=0
+    return[indexList,pixels0,pixels1]
