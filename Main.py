@@ -18,6 +18,7 @@ def main():
     #clusters=FC.getClusters(contrastMap)
     #FC.colorCluster(clusters,contrastMap)
     #CorelationMap=CC.crossCorelateMaps(contrastMap,contrastMap[5:500,7:502])
+    CC.crossCorelateFrames(contrastMap[0:400,250:650],10,contrastMap[0:400,250:650])
     return [contrastMap,BG]#, CorelationMap]#CorelationMap
 
 if __name__=="__main__":

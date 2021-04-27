@@ -40,7 +40,7 @@ def crossCorelateMaps(mainMap,kernel):
             correlation[i,j]=sumArray(kernel*canvas[i:i+ki,j:j+kj])
             if j % 100 == 0:
                 current=float(i)*float(jnum)+float(j)
-                print(current/end)#To give an indication of the process.
+                print(str(current/end*100)+' %')#To give an indication of the process.
     return correlation
 
 def sumArray(array):
@@ -70,26 +70,31 @@ def discretizeMap(Map,numel0):
     return[indexList,pixels0,pixels1,numel0,numel1]
 
 #Applies cross correlation from one picture divided into equally large elements, to another picture to see the change in location
+
+#Errors: Where to begin? the indexList outputs more indices than the size of the displacementX or the displacementY (at least for a 3*3 array).
+    #Also, the function does not work, but bluntly pasting it into the command prompt works (better)... wth is this?
 def crossCorelateFrames(frame0,numel,frame1):
     import numpy as np
     import copy as cp
-    DiscreteProperties=discretizeMap(frame0,numel)
-    indexList=DiscreteProperties[0]
+    DiscreteProperties=discretizeMap(frame0,numel)#returning the number of pixels in each cell, as well as the number of cells in each direction
+    indexList=DiscreteProperties[0] #Puttuing these values in a more readable form:
     pixels0=DiscreteProperties[1]
     pixels1=DiscreteProperties[2]
     numel0=DiscreteProperties[3]
     numel1=DiscreteProperties[4]
-    displacement=np.zeros([numel0,numel1])
-    canvasIndex=cp.deepcopy(displacement)
+    displacementX=np.zeros([numel0,numel1])#initializing a map to write the values for the displacement
+    displacementY=cp.deepcopy(displacementX)#Finds max value for current cell corelation on entire canvas.
     icount=0
     jcount=0
-    for (i,j) in DiscreteProperties[0]:
-        correlation=crossCorelateMaps(frame1,frame0[i:i+DiscreteProperties[1],j:DiscreteProperties[2]])
-        canvasIndex[icount,jcount]=np.unravel_index(correlation.argmax(),correlation.shape)
-        displacement[icount,jcount]=(canvasIndex[icount,jcount][0]-i+DiscreteProperties[1]-1,canvasIndex[icount,jcount][1]-j+DiscreteProperties[2]-1)
+    for (i,j) in indexList:
+        correlation=crossCorelateMaps(frame1,frame0[i:i+pixels0,j:j+pixels1])
+        #correlation=[1,1]
+        maxCorelationIndex=np.unravel_index(correlation.argmax(),correlation.shape)#Finds position for upper left corner of frame with best correlation
+        displacementX[icount,jcount]=maxCorelationIndex[0]-i+pixels0-1#max index minus i to find displacement, plus (pixels0-1) to adjust for map being larger than canvas
+        displacementY[icount,jcount]=maxCorelationIndex[1]-j+pixels1-1
         icount+=1
-        if icount>DiscreteProperties[3]:
+        if icount>numel0: #Move to next row if we're finished with all indices for current column
             icount=0
             jcount+=1
-    return displacement    
-        
+    return displacementX,displacementY
+    
