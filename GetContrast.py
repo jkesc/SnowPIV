@@ -8,10 +8,11 @@ Created on Sun Mar 21 22:13:11 2021
 import cv2
 import numpy as np
 
-def RemoveBG(ImgAve,name,record=False,ContrastTreshold=100,filename='FilteredPIV.avi'):
+def RemoveBG(ImgAve,name,record=False,ContrastTreshold=100,filename='FilteredPIV.avi',frame=0):
     
     video=cv2.VideoCapture(name)
     success,image=video.read()
+    frameno=0
     height,width,channels=image.shape
     fps=video.get(cv2.CAP_PROP_FPS)
     #read video and find dimensions and properties
@@ -35,6 +36,9 @@ def RemoveBG(ImgAve,name,record=False,ContrastTreshold=100,filename='FilteredPIV
             #Writing frame to video and reading new frame
         videoFile.release()
     else:
+        while success and frameno<frame:
+            success,image=video.read()
+            frameno+=1
         ContrastMap=(((image-ImgAve)[:,:,0]>ContrastTreshold)+((image-ImgAve)[:,:,1]>ContrastTreshold)+((image-ImgAve)[:,:,2]>ContrastTreshold)).astype(np.uint8)*255
     cv2.destroyAllWindows()
     return ContrastMap

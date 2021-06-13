@@ -111,7 +111,8 @@ def crossCorelateFrames(frame0,numel,frame1,Progress=False):
 #        print('submap:\n'+str(frame0[i:i+pixels0,j:j+pixels1]))
 #        print('\ncorrelation:\n'+str(correlation))
 #        print('\nmax index: '+str(maxCorelationIndex))
-        displacementY[icount,jcount]=maxCorelationIndex[0]-i-(pixels0-1)#max index minus i to find displacement, minus (pixels0-1) to adjust for map being larger than canvas
+        displacementY[icount,jcount]=-(maxCorelationIndex[0]-i-(pixels0-1))#max index minus i to find displacement, minus (pixels0-1) to adjust for map being larger than canvas
+        #dy is inversed as the indexing starts from the top, but cartesian systems start at the bottom. As does "plt.quiver"
         displacementX[icount,jcount]=maxCorelationIndex[1]-j-(pixels1-1)
         
         icount+=1

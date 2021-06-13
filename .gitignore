@@ -6,6 +6,8 @@
 *.mp4
 *.pyc
 *.avi
+*.png
+*.pdf
 /app/etc/local.xml
 
 /media/*
