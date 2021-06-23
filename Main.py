@@ -11,19 +11,30 @@ Created on Sun Mar 21 21:53:47 2021
 #main function
 import FilterBG as FBG
 import GetContrast as GC
-#import FindCluster as FC
+import FindCluster as FC
 import CrossCorelation as CC
 import Visualization as VS
+
+def flakeRange(Map,lower,upper):
+    cluster=FC.getClusters(Map)
+    out=FC.colorCluster(cluster,Map,lower,upper,255,0)
+    return out[0]
 
 def main():
     BG=FBG.GetBG('PIV2.mp4')
     treshold=100#contrast threshold
-    for i in range(20):
+    minFlakeSize=3
+    maxFlakeSize=10
+    for i in range(2):
         contrastMap0=GC.RemoveBG(BG,'PIV2.mp4',record=False,ContrastTreshold=treshold,filename=str(treshold)+'.avi',frame=i)
         contrastMap1=GC.RemoveBG(BG,'PIV2.mp4',record=False,ContrastTreshold=treshold,filename=str(treshold)+'.avi',frame=i+1)
-        dx,dy,idx=CC.crossCorelateFrames(contrastMap0[0:400,250:650],10,contrastMap1[0:400,250:650],True)
-        image=VS.vectorField(contrastMap0[0:400,250:650],dx,dy,idx)
-        image.savefig('vectorField_frame_'+str(i)+'.png')
+        print('read maps for iteration '+str(i)+'\n')
+        contrastMap0=flakeRange(contrastMap0[0:600,250:1000],minFlakeSize,maxFlakeSize)#[0:600,250:1000][0:400,250:650]
+        contrastMap1=flakeRange(contrastMap1[0:600,250:1000],minFlakeSize,maxFlakeSize)
+        print('Filtered flakes for iteration '+str(i)+'\n')
+        dx,dy,idx=CC.crossCorelateFrames(contrastMap0,10,contrastMap1,True)
+        image=VS.vectorField(contrastMap0,dx,dy,idx)
+        image.savefig('vectorField_frame_'+str(i)+'flakeRange'+str(minFlakeSize)+','+str(maxFlakeSize)+'.png')
         image.clf()
     return [contrastMap0,contrastMap1,BG,dx,dy,idx]#, CorelationMap
 

@@ -29,7 +29,7 @@ def getClusters(contrastMap):
     return clusters
 
 #This one just checks the size of each cluster, and colors it according to its size.
-def colorCluster(cluster,contrastMap,size=17,colorAbove=255,colorBelow=255):
+def colorCluster(cluster,contrastMap,sizeMin=17,sizeMax=200,colorInRange=255,colorOutsideRange=255):
     import copy as cp
     R=cp.deepcopy(contrastMap)
     G=cp.deepcopy(contrastMap)
@@ -37,11 +37,11 @@ def colorCluster(cluster,contrastMap,size=17,colorAbove=255,colorBelow=255):
     for key in cluster:
         #color=key%255
         for i in cluster[key]["member"]:
-            if len(cluster[key]["member"])>size:
-                R[i]=colorAbove
+            if len(cluster[key]["member"])>sizeMin and len(cluster[key]["member"])<sizeMax:
+                R[i]=colorInRange
                 G[i]=0
             else:
-                G[i]=colorBelow
+                G[i]=colorOutsideRange
                 R[i]=0
             B[i]=0
     return R,G,B
