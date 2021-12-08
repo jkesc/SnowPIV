@@ -20,9 +20,9 @@ def vectorField(frame,dx,dy,idx,VectorColor=[0,1,0],frame2=0):
     for i,j in idx:
         xVec=np.append(xVec,i)
         yVec=np.append(yVec,j)
-#    xOffset=abs(xVec[1]-xVec[0])/2
-#    yOffset=abs(yVec[1]-yVec[0])/2
-#    plt.quiver(xVec+xOffset,yVec+yOffset,dx,dy,color=VectorColor)
+   # xOffset=abs(xVec[1]-xVec[0])/2
+  #  yOffset=abs(yVec[1]-yVec[0])/2
+ #   plt.quiver(xVec+xOffset,yVec+yOffset,dx,dy,color=VectorColor)
     plt.quiver(xVec,yVec,dx,dy,color=VectorColor)
     return fig
     

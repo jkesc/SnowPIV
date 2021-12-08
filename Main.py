@@ -9,6 +9,7 @@ Created on Sun Mar 21 21:53:47 2021
 #Should also confine it to one size of snowflakes. At it is now. one flake close to thecamera always results in large values, so all vectors point towards it.
 #Also: maybe find a way to reduce the resoultion of the picture to get fewer pixels -> fewer iterations?
 #main function
+#import cv2
 import FilterBG as FBG
 import GetContrast as GC
 import FindCluster as FC
@@ -21,24 +22,31 @@ def flakeRange(Map,lower,upper):
     return out[0]
 
 def main():
-    BG=FBG.GetBG('PIV2.mp4')
+    import cv2
+#    frame1=cv2.imread("testPic1.png")
+#    frame2=cv2.imread("testPic2.png")
+#    result = cv2.matchTemplate(frame1,frame1[10:100,20:100],cv2.TM_CCOEFF)
+#    return [frame1, frame2,result]
+    videoname='testPiv.mp4'#'PIV2.mp4'#
+    BG=FBG.GetBG(videoname)
     treshold=100#contrast threshold
-    minFlakeSize=3
+    minFlakeSize=1
     maxFlakeSize=10
-    for i in range(2):
-        contrastMap0=GC.RemoveBG(BG,'PIV2.mp4',record=False,ContrastTreshold=treshold,filename=str(treshold)+'.avi',frame=i)
-        contrastMap1=GC.RemoveBG(BG,'PIV2.mp4',record=False,ContrastTreshold=treshold,filename=str(treshold)+'.avi',frame=i+1)
+    vid = cv2.VideoCapture("PIV2.mp4")
+    frames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
+    for i in range(frames-1):
+        contrastMap0=GC.RemoveBG(BG,videoname,record=False,ContrastTreshold=treshold,filename=str(treshold)+'.avi',frame=i)
+        contrastMap1=GC.RemoveBG(BG,videoname,record=False,ContrastTreshold=treshold,filename=str(treshold)+'.avi',frame=i+1)
         print('read maps for iteration '+str(i)+'\n')
         contrastMap0=flakeRange(contrastMap0[0:600,250:1000],minFlakeSize,maxFlakeSize)#[0:600,250:1000][0:400,250:650]
         contrastMap1=flakeRange(contrastMap1[0:600,250:1000],minFlakeSize,maxFlakeSize)
         print('Filtered flakes for iteration '+str(i)+'\n')
-        dx,dy,idx=CC.crossCorelateFrames(contrastMap0,10,contrastMap1,True)
+        dx,dy,idx=CC.crossCorelateFramesCV2(contrastMap0,10,contrastMap1,True)
         image=VS.vectorField(contrastMap0,dx,dy,idx)
         image.savefig('vectorField_frame_'+str(i)+'flakeRange'+str(minFlakeSize)+','+str(maxFlakeSize)+'.png')
         image.clf()
-    return [contrastMap0,contrastMap1,BG,dx,dy,idx]#, CorelationMap
+    return [contrastMap0,contrastMap1,BG,dx,dy,idx]#, corelationmap
 
 if __name__=="__main__":
 #    contrastMap, clusters, BG=main()
     ValOut=main()
-    #Find the average value of all of the images and return it.

@@ -7,6 +7,8 @@ Created on Wed Apr 14 19:15:49 2021
 #To do:
 #Find out why the discretizeMap function sometimes spits out a too large value for numel1. Maybe something related to rounding errors?
 #Should also make a statement where parts with only zero in them get a velocity change of zero.
+
+#This seems to spit out what I expected, but is hopelessly insufficient compared to opencv2...
 def crossCorelateMaps(mainMap,kernel,Progress=False):
     import numpy as np
     normalizationFactor=max([abs(mainMap).max(),abs(kernel.max()),1])
@@ -33,6 +35,59 @@ def crossCorelateMaps(mainMap,kernel,Progress=False):
                 current=float(i)*float(jnum)+float(j)
                 print(str(current/end*100)+' %')#To give an indication of the process.
     return correlation
+
+def crossCorelateFramesCV2(frame0,numel,frame1,Progress=False):
+    
+    import numpy as np
+    import copy as cp
+    import cv2
+
+    numel_max=min(frame0.shape[0],frame0.shape[1])#failsafe in case somebody inputs a numel larger than the frame size.
+    if numel>numel_max:
+        from inspect import currentframe, getframeinfo #Copied this from the internet somewhere, gives filename and line number
+        cf = currentframe()
+        filename = getframeinfo(cf).filename
+        numel=numel_max #sets numel to smallest frame size
+        print('Warning: numel changed to '+str(numel_max)+' in file '+str(filename)+', line '+str(cf.f_lineno)+'\n') #tells user about what was done
+        
+    DiscreteProperties=discretizeMap(frame0,numel)#returning the number of pixels in each cell, as well as the number of cells in each direction
+    
+    indexList=DiscreteProperties[0] #Putting these values in a more readable form:
+#    print(indexList)
+    pixels0=DiscreteProperties[1]#pixels in 0 dirn
+    pixels1=DiscreteProperties[2]#pixels in 1 dirn
+#    print('\npixels 0: '+str(pixels0)) 
+#    print('\npixels 1: '+str(pixels1))
+    numel0=DiscreteProperties[3]#elements in 0 dirn
+    numel1=DiscreteProperties[4]#elements in 1 dirn
+#    print('\nnumel 0: '+str(numel0)) 
+#    print('\nnumel 1: '+str(numel1))
+    displacementX=np.zeros([numel0,numel1])#initializing a map to write the values for the displacement
+    displacementY=cp.deepcopy(displacementX)#Finds max value for current cell corelation on entire canvas.
+    
+    icount=0
+    jcount=0
+    if Progress == True:
+        iProgress=0
+    
+    for (i,j) in indexList:
+        if Progress == True:
+            print(str(iProgress*100/len(indexList))+'%\n')
+            iProgress+=1
+        correlation=cv2.matchTemplate(frame1,frame0[i:i+pixels0,j:j+pixels1],cv2.TM_CCOEFF)
+        maxCorelationIndex=np.unravel_index(correlation.argmax(),correlation.shape)#Finds position for upper left corner of frame with best correlation
+#        print('submap:\n'+str(frame0[i:i+pixels0,j:j+pixels1]))
+#        print('\ncorrelation:\n'+str(correlation))
+#        print('\nmax index: '+str(maxCorelationIndex))
+        displacementY[icount,jcount]=-(maxCorelationIndex[0]-i-(pixels0-1))#max index minus i to find displacement, minus (pixels0-1) to adjust for map being larger than canvas
+        #dy is inversed as the indexing starts from the top, but cartesian systems start at the bottom. As does "plt.quiver"
+        displacementX[icount,jcount]=maxCorelationIndex[1]-j-(pixels1-1)
+        
+        icount+=1
+        if icount>=numel0: #Move to next row if we're finished with all indices for current column
+            icount=0
+            jcount+=1
+    return displacementX,displacementY,indexList
 
 def sumArray(array):
     from collections.abc import Iterable
