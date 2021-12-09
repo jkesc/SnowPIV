@@ -76,13 +76,17 @@ def crossCorelateFramesCV2(frame0,numel,frame1,Progress=False):
             print(str(iProgress*100/len(indexList))+'%\n')
             iProgress+=1
         correlation=cv2.matchTemplate(frame1,frame0[i:i+pixels0,j:j+pixels1],cv2.TM_CCOEFF)
-        maxCorelationIndex=np.unravel_index(correlation.argmax(),correlation.shape)#Finds position for upper left corner of frame with best correlation
-#        print('submap:\n'+str(frame0[i:i+pixels0,j:j+pixels1]))
-#        print('\ncorrelation:\n'+str(correlation))
-#        print('\nmax index: '+str(maxCorelationIndex))
-        displacementY[icount,jcount]=-(maxCorelationIndex[0]-i-(pixels0-1))#max index minus i to find displacement, minus (pixels0-1) to adjust for map being larger than canvas
-        #dy is inversed as the indexing starts from the top, but cartesian systems start at the bottom. As does "plt.quiver"
-        displacementX[icount,jcount]=maxCorelationIndex[1]-j-(pixels1-1)
+        #Pseudo code to add here: 
+        if correlation.max()<100:
+            displacementX[icount,jcount]=0
+            displacementY[icount,jcount]=0
+        else:
+        #If all correlation points are smaller than 1000 or something: displacementY=0,displacementX=0
+            #else: as before.
+            maxCorrelationIndex=np.unravel_index(correlation.argmax(),correlation.shape)#Finds position for upper left corner of frame with best correlation
+            displacementY[icount,jcount]=-(maxCorrelationIndex[0]-i-(pixels0-1))#max index minus i to find displacement, minus (pixels0-1) to adjust for map being larger than canvas
+            #dy is inversed as the indexing starts from the top, but cartesian systems start at the bottom. As does "plt.quiver"
+            displacementX[icount,jcount]=maxCorrelationIndex[1]-j-(pixels1-1)
         
         icount+=1
         if icount>=numel0: #Move to next row if we're finished with all indices for current column

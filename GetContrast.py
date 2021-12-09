@@ -36,6 +36,9 @@ def RemoveBG(ImgAve,name,record=False,ContrastTreshold=100,filename='FilteredPIV
             #Writing frame to video and reading new frame
         videoFile.release()
     else:
+        
+        #I have no idea why I want frameno less than frame... In main, I increase frame in each loop...
+        
         while success and frameno<frame:
             success,image=video.read()
             frameno+=1
