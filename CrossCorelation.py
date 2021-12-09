@@ -22,6 +22,7 @@ def crossCorelateMaps(mainMap,kernel,Progress=False):
     inum=iImg+ki-1#Number of i-values
     jnum=jImg+kj-1#number of j-values to iterate over
     correlation=np.zeros([inum,jnum])
+    
     #I think this works, but it takes extremely long time for just one image... Should really attempt a way without the zeros around...
     #Should also try to write this for multiprocessing purposes, to process each picture individually.
     #AND, should reduce the image size. large parts of it are to fuzzy to get a good flow field anyways.
@@ -89,6 +90,8 @@ def crossCorelateFramesCV2(frame0,numel,frame1,Progress=False):
             jcount+=1
     return displacementX,displacementY,indexList
 
+
+#Function to sum an array
 def sumArray(array):
     from collections.abc import Iterable
     arrayOut=array
